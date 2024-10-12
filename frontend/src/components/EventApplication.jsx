@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getEventById, joinEvent } from '../api/events';
 import { AuthContext } from './AuthContext';
+import { motion } from 'framer-motion';
 import Loader from './Loader';
 
 function EventApplication() {
@@ -40,37 +41,39 @@ function EventApplication() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await joinEvent(id);
+      const response = await joinEvent(id, applicationData);
       console.log('Application submitted successfully:', response);
       alert('Application submitted successfully!');
       navigate(`/events/${id}`);
     } catch (error) {
-      console.error('Error submitting application:', error.response?.data || error.message);
-      if (error.response?.status === 404) {
-        setError('This event no longer exists. It may have been deleted.');
-        // Optionally, you could remove this event from the local state or storage
-      } else {
-        setError(error.response?.data?.message || 'Failed to submit application. Please try again.');
-      }
+      console.error('Error submitting application:', error);
+      setError(error.response?.data?.message || 'Failed to submit application. Please try again.');
     }
   };
 
   if (loading) return <Loader />;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!event) return <div>No event found.</div>;
+  if (error) return <div className="text-red-500 text-center">{error}</div>;
+  if (!event) return <div className="text-center">No event found.</div>;
 
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <h2 className="text-3xl font-bold mb-4">{event.title} - Application</h2>
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-4">Event Details</h3>
-        <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-        <p><strong>Location:</strong> {event.location}</p>
-        <p><strong>Capacity:</strong> {event.capacity}</p>
-        <p className="mb-4"><strong>Description:</strong> {event.description}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden"
+    >
+      <div className="px-6 py-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">{event.title} - Application</h2>
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Event Details</h3>
+          <p className="text-gray-600 dark:text-gray-400"><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
+          <p className="text-gray-600 dark:text-gray-400"><strong>Location:</strong> {event.location}</p>
+          <p className="text-gray-600 dark:text-gray-400"><strong>Capacity:</strong> {event.capacity}</p>
+          <p className="text-gray-600 dark:text-gray-400"><strong>Description:</strong> {event.description}</p>
+        </div>
 
-        <h3 className="text-xl font-semibold mb-4">Application Form</h3>
-        <form onSubmit={handleSubmit}>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Application Form</h3>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-4">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
             <input
@@ -107,15 +110,17 @@ function EventApplication() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             ></textarea>
           </div>
-          <button
+          <motion.button
             type="submit"
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
           >
             Submit Application
-          </button>
+          </motion.button>
         </form>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

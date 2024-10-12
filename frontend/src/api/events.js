@@ -40,15 +40,15 @@ export const getEventById = async (id) => {
   }
 };
 
-export const joinEvent = async (id) => {
+export const joinEvent = async (id, applicationData) => {
   try {
-    const response = await axios.post(`${API_URL}/${id}/join`, {}, { 
+    const response = await axios.post(`${API_URL}/${id}/join`, applicationData, { 
       headers: getAuthHeader(),
     });
     console.log('Join event response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error joining event:', error.response?.data || error.message);
+    console.error('Error joining event:', error.response || error);
     throw error;
   }
 };

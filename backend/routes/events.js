@@ -63,18 +63,16 @@ router.post('/:id/join', auth, async (req, res) => {
       return res.status(400).json({ message: 'Event is already at full capacity' });
     }
 
-    // Add the user to the participants array
     event.participants.push(req.user._id);
     await event.save();
 
-    // Update the user's participatedEvents
     const user = await User.findById(req.user._id);
     user.participatedEvents.push(event._id);
     await user.save();
 
     res.status(200).json({ message: 'Successfully joined the event', event });
   } catch (error) {
-    console.error('Detailed error in join event:', error);
+    console.error('Error joining event:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

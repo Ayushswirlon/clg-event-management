@@ -27,17 +27,3 @@ app.use('/api/events', require('./routes/events'));
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
-
-async function cleanupEvents() {
-  try {
-    // Remove events that are older than a certain date
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-    await Event.deleteMany({ date: { $lt: oneMonthAgo } });
-
-    console.log('Old events cleaned up successfully');
-  } catch (error) {
-    console.error('Error cleaning up events:', error);
-  }
-}
