@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://clg-event-management-uofw-ptw0ru66h-ayush-carpetners-projects.vercel.app';
+const API_URL = 'http://localhost:5000/api/events';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
