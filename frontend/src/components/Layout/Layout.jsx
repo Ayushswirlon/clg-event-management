@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
+import { AuthContext } from '../Auth/AuthContext';
 import { motion } from 'framer-motion';
 import { FiMenu, FiX, FiMoon, FiSun } from 'react-icons/fi';
 import Footer from './Footer';
-import Hero from './Hero';
+import Hero from '../Hero';
 
 function Layout({ children }) {
   const { isAuthenticated, user, logout } = useContext(AuthContext);

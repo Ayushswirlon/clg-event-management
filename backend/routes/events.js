@@ -8,10 +8,24 @@ const User = require('../models/User');
 // Get all events
 router.get('/', async (req, res) => {
   try {
-    const events = await Event.find({ deleted: { $ne: true } }).populate('organizer', 'username');
+    const { search, category } = req.query;
+    let query = { deleted: { $ne: true } };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    const events = await Event.find(query).populate('organizer', 'username');
     console.log('Events from database:', events);
     console.log('Number of events:', events.length);
-    res.json(events); // Send the events array directly
+    res.json(events);
   } catch (error) {
     console.error('Error fetching events:', error);
     res.status(500).json({ message: error.message });
@@ -19,31 +33,53 @@ router.get('/', async (req, res) => {
 });
 
 // Create a new event
-router.post('/', auth, roleAuth(['collegeEventer']), async (req, res) => {
-  const event = new Event({
-    ...req.body,
-    organizer: req.user._id
-  });
-
+router.post('/', auth, async (req, res) => {
   try {
-    const newEvent = await event.save();
-    await User.findByIdAndUpdate(req.user._id, { $push: { createdEvents: newEvent._id } });
-    res.status(201).json(newEvent);
+    const { title, description, date, location, capacity, category } = req.body;
+    console.log('Creating event with data:', { title, description, date, location, capacity, category });
+    console.log('User ID:', req.user._id);
+
+    const newEvent = new Event({
+      title,
+      description,
+      date,
+      location,
+      capacity,
+      category,
+      organizer: req.user._id
+    });
+    const savedEvent = await newEvent.save();
+    console.log('Event saved:', savedEvent);
+
+    // Add the event to the user's createdEvents array
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { createdEvents: savedEvent._id } },
+      { new: true }
+    );
+    console.log('Updated user:', updatedUser);
+
+    res.status(201).json(savedEvent);
   } catch (error) {
+    console.error('Error creating event:', error);
     res.status(400).json({ message: error.message });
   }
 });
 
 // Get a single event by ID
 router.get('/:id', async (req, res) => {
+  console.log('Received request for event with ID:', req.params.id);
   try {
-    const event = await Event.findById(req.params.id).populate('organizer', 'username').populate('participants', 'username');
+    const event = await Event.findById(req.params.id).populate('organizer', 'username');
+    console.log('Found event:', event);
     if (!event) {
+      console.log('Event not found');
       return res.status(404).json({ message: 'Event not found' });
     }
     res.json(event);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching event:', error);
+    res.status(500).json({ message: 'Error fetching event', error: error.message });
   }
 });
 
@@ -79,20 +115,18 @@ router.post('/:id/join', auth, async (req, res) => {
 
 // Get participants of an event
 router.get('/:id/participants', auth, async (req, res) => {
+  console.log('Received request for participants of event with ID:', req.params.id);
   try {
-    const event = await Event.findById(req.params.id).populate('participants', 'username email');
+    const event = await Event.findById(req.params.id).populate('participants', 'username email profilePicture');
     if (!event) {
+      console.log('Event not found');
       return res.status(404).json({ message: 'Event not found' });
     }
-    
-    // Check if the user is the organizer or a participant
-    if (event.organizer.toString() !== req.user._id.toString() && !event.participants.some(p => p._id.toString() === req.user._id.toString())) {
-      return res.status(403).json({ message: 'You do not have permission to view the participants' });
-    }
-    
+    console.log('Found participants:', event.participants);
     res.json(event.participants);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching event participants' });
+    console.error('Error fetching event participants:', error);
+    res.status(500).json({ message: 'Error fetching event participants', error: error.message });
   }
 });
 

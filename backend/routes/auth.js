@@ -3,8 +3,29 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.js')
 const auth = require('../middleware/auth');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure multer for file uploads
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'profile_pictures',
+    allowed_formats: ['jpg', 'png', 'jpeg']
+  }
+});
+
+const upload = multer({ storage: storage });
 
 const router = express.Router();
 
@@ -57,16 +78,27 @@ router.post('/login', async (req, res) => {
 // Add this route to the existing routes in auth.js
 router.get('/profile', auth, async (req, res) => {
   try {
+    console.log('Fetching profile for user ID:', req.user._id);
     const user = await User.findById(req.user._id)
       .select('-password')
       .populate('participatedEvents')
-      .populate('createdEvents');
+      .populate('createdEvents')
+      .lean();
+    
     if (!user) {
+      console.log('User not found');
       return res.status(404).json({ message: 'User not found' });
     }
+    
+    // Ensure these fields exist, even if they're empty
+    user.participatedEvents = user.participatedEvents || [];
+    user.createdEvents = user.createdEvents || [];
+    
+    console.log('User found:', user);
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching user profile' });
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ message: 'Error fetching user profile', error: error.message });
   }
 });
 
@@ -80,6 +112,37 @@ router.get('/event-participants/:eventId', auth, async (req, res) => {
     res.json(event.participants);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching event participants' });
+  }
+});
+
+// Make sure this route is defined in your auth.js file
+router.put('/profile', auth, upload.single('profilePicture'), async (req, res) => {
+  try {
+    const updates = req.body;
+    const allowedUpdates = ['username', 'email', 'bio'];
+    const isValidOperation = Object.keys(updates).every(update => allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+      return res.status(400).send({ error: 'Invalid updates!' });
+    }
+
+    // If a new profile picture was uploaded, add its URL to the updates
+    if (req.file) {
+      updates.profilePicture = req.file.path;
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).send();
+    }
+
+    Object.keys(updates).forEach(update => user[update] = updates[update]);
+    await user.save();
+
+    res.send(user);
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 

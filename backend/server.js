@@ -2,6 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+const authRoutes = require('./routes/auth');
+const eventRoutes = require('./routes/events');
+require('./models/User');
+require('./models/Event');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,9 +24,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch((error) => console.log('MongoDB connection error:', error));
 
 // Make sure this line is present and correct
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', authRoutes);
 
-app.use('/api/events', require('./routes/events'));
+app.use('/api/events', eventRoutes);
+
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });

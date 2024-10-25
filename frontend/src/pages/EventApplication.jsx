@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getEventById, joinEvent } from '../api/events';
-import { AuthContext } from './AuthContext';
+import { AuthContext } from '../components/Auth/AuthContext';
 import { motion } from 'framer-motion';
-import Loader from './Loader';
+import Loader from '../components/Loader';
 
 function EventApplication() {
   const [event, setEvent] = useState(null);
@@ -17,6 +17,12 @@ function EventApplication() {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     async function fetchEvent() {
@@ -40,6 +46,10 @@ function EventApplication() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      setError('You must be logged in to submit an application.');
+      return;
+    }
     try {
       const response = await joinEvent(id, applicationData);
       console.log('Application submitted successfully:', response);

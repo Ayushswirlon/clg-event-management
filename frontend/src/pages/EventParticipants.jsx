@@ -1,29 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getEventParticipants } from '../api/events';
-import Loader from './Loader';
+import { AuthContext } from '../components/Auth/AuthContext'; // Adjust the import path as needed
+import Loader from '../components/Loader';
 
 function EventParticipants() {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login'); // Redirect to login page if user is not authenticated
+      return;
+    }
+
     async function fetchParticipants() {
       try {
         setLoading(true);
+        console.log('Fetching participants for event ID:', id);
         const participantsData = await getEventParticipants(id);
+        console.log('Received participants data:', participantsData);
         setParticipants(participantsData);
       } catch (err) {
         setError('Failed to fetch participants. Please try again later.');
         console.error('Error fetching participants:', err);
+        if (err.response) {
+          console.error('Response status:', err.response.status);
+          console.error('Response data:', err.response.data);
+          if (err.response.status === 401) {
+            // Handle unauthorized access (e.g., redirect to login)
+            navigate('/login');
+          }
+        }
       } finally {
         setLoading(false);
       }
     }
     fetchParticipants();
-  }, [id]);
+  }, [id, user, navigate]);
 
   if (loading) return <Loader />;
   if (error) return <div className="text-red-500">{error}</div>;

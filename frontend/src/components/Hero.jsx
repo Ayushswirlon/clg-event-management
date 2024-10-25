@@ -1,106 +1,120 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useAnimation } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Route } from 'react-router-dom';
+// import './Hero.css';/
 
 const Hero = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const heroRef = useRef(null);
-  const controls = useAnimation();
+  const canvasRef = useRef(null);
+  const [isMouseMoving, setIsMouseMoving] = useState(false);
+  const lastMousePosition = useRef({ x: 0, y: 0 });
+  const mousePosition = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      const { clientX, clientY } = e;
-      const { left, top, width, height } = heroRef.current.getBoundingClientRect();
-      const x = (clientX - left) / width;
-      const y = (clientY - top) / height;
-      setMousePosition({ x, y });
+    const hero = heroRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    let animationFrameId;
+    let time = 0;
+
+    const resizeCanvas = () => {
+      canvas.width = hero.clientWidth;
+      canvas.height = hero.clientHeight;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    const drawGrid = (offsetX, offsetY) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = 'rgba(75, 85, 99, 0.3)';
+      ctx.lineWidth = 1;
 
-  useEffect(() => {
-    controls.start({
-      backgroundPosition: `${mousePosition.x * 100}% ${mousePosition.y * 100}%`,
-    });
-  }, [mousePosition, controls]);
+      const gridSize = 40;
+      const cols = Math.ceil(canvas.width / gridSize) + 1;
+      const rows = Math.ceil(canvas.height / gridSize) + 1;
+
+      for (let i = 0; i < cols; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * gridSize + offsetX, 0);
+        ctx.lineTo(i * gridSize + offsetX, canvas.height);
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < rows; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i * gridSize + offsetY);
+        ctx.lineTo(canvas.width, i * gridSize + offsetY);
+        ctx.stroke();
+      }
+    };
+
+    const animate = () => {
+      time += 0.005;
+      let offsetX, offsetY;
+
+      if (isMouseMoving) {
+        offsetX = (mousePosition.current.x - canvas.width / 2) * 0.05;
+        offsetY = (mousePosition.current.y - canvas.height / 2) * 0.05;
+      } else {
+        offsetX = Math.cos(time) * 20;
+        offsetY = Math.sin(time) * 20;
+      }
+
+      drawGrid(offsetX, offsetY);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mousePosition.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+
+      if (
+        Math.abs(mousePosition.current.x - lastMousePosition.current.x) > 1 ||
+        Math.abs(mousePosition.current.y - lastMousePosition.current.y) > 1
+      ) {
+        setIsMouseMoving(true);
+        lastMousePosition.current = { ...mousePosition.current };
+
+        clearTimeout(mouseTimeout);
+        mouseTimeout = setTimeout(() => setIsMouseMoving(false), 100);
+      }
+    };
+
+    let mouseTimeout;
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    hero.addEventListener('mousemove', handleMouseMove);
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      hero.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+      clearTimeout(mouseTimeout);
+    };
+  }, [isMouseMoving]);
 
   return (
-    <motion.div
-      ref={heroRef}
-      className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600"
-      animate={controls}
-      transition={{ type: 'spring', stiffness: 100, damping: 30 }}
+    <section 
+      ref={heroRef} 
+      className="relative bg-gray-900 text-white min-h-screen flex items-center justify-center overflow-hidden"
     >
-      <div className="absolute inset-0 bg-black opacity-50"></div>
-      <div className="relative z-10 text-center text-white">
-        <motion.h1
-          className="text-5xl md:text-7xl font-bold mb-4"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          Welcome to EventHub
-        </motion.h1>
-        <motion.p
-          className="text-xl md:text-2xl mb-8"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          Discover and create amazing college events
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-        >
-          <Link
-            to="/events"
-            className="bg-white text-indigo-600 px-8 py-3 rounded-full font-semibold text-lg hover:bg-indigo-100 transition duration-300 ease-in-out transform hover:scale-105"
-          >
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none"></canvas>
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 className="text-5xl sm:text-6xl font-bold mb-6">Welcome to Our Event Platform</h1>
+        <p className="text-xl sm:text-2xl mb-10">Discover and join amazing events in your area</p>
+        <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <a  href="/" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
             Explore Events
-          </Link>
-        </motion.div>
+          </a>
+          <a href="/create" className="bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white font-bold py-3 px-6 rounded-lg border border-blue-500 hover:border-transparent transition duration-300">
+            Create Event
+          </a>
+        </div>
       </div>
-      <CursorInteractiveBubbles mousePosition={mousePosition} />
-    </motion.div>
-  );
-};
-
-const CursorInteractiveBubbles = ({ mousePosition }) => {
-  const bubbles = [
-    { size: 100, delay: 0 },
-    { size: 80, delay: 0.2 },
-    { size: 60, delay: 0.4 },
-    { size: 40, delay: 0.6 },
-  ];
-
-  return (
-    <>
-      {bubbles.map((bubble, index) => (
-        <motion.div
-          key={index}
-          className="absolute rounded-full bg-white bg-opacity-10"
-          style={{
-            width: bubble.size,
-            height: bubble.size,
-          }}
-          animate={{
-            x: mousePosition.x * 100,
-            y: mousePosition.y * 100,
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            type: 'spring',
-            stiffness: 150,
-            damping: 15,
-            delay: bubble.delay,
-          }}
-        />
-      ))}
-    </>
+    </section>
   );
 };
 

@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { AuthProvider } from './components/AuthContext';
-import Layout from './components/Layout';
-import EventList from './components/EventList';
-import EventForm from './components/EventForm';
-import EventDetails from './components/EventDetails';
-import EventParticipants from './components/EventParticipants';
-import EventApplication from './components/EventApplication';
+import { AuthProvider } from './components/Auth/AuthContext.jsx';
+import Layout from './components/Layout/Layout.jsx';
+import EventList from './components/Events/EventList.jsx';
+import EventForm from './components/Events/EventForm.jsx';
+import EventDetails from './components/Events/EventDetails.jsx';
+import EventParticipants from './pages/EventParticipants.jsx';
+import EventApplication from './pages/EventApplication.jsx';
 import Auth from './components/auth.jsx';
-import Profile from './components/Profile';
+import Profile from './pages/Profile.jsx';
 
 function App() {
   return (

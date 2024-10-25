@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getEventById, joinEvent } from '../api/events';
-import { AuthContext } from './AuthContext';
-import Loader from './Loader';
+import { getEventById, joinEvent } from '../../api/events.js';
+import { AuthContext } from '../Auth/AuthContext.jsx';
+import Loader from '../Loader';
 
 function EventDetails() {
   const [event, setEvent] = useState(null);
@@ -15,11 +15,17 @@ function EventDetails() {
     async function fetchEvent() {
       try {
         setLoading(true);
+        console.log('Fetching event with ID:', id);
         const eventData = await getEventById(id);
+        console.log('Received event data:', eventData);
         setEvent(eventData);
       } catch (err) {
         setError('Failed to fetch event details. Please try again later.');
         console.error('Error fetching event:', err);
+        if (err.response) {
+          console.error('Response status:', err.response.status);
+          console.error('Response data:', err.response.data);
+        }
       } finally {
         setLoading(false);
       }

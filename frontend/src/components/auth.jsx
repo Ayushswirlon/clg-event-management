@@ -1,11 +1,11 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
+import { AuthContext } from './Auth/AuthContext';
 import { motion } from 'framer-motion';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 
-const API_URL = 'http://localhost:5000'; // or your actual backend URL
+const API_URL = 'http://localhost:5000/api'; // or your actual backend URL
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,9 +22,10 @@ function Auth() {
     setError('');
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/auth/${isLogin ? 'login' : 'signup'}`,
+        `${API_URL}/auth/${isLogin ? 'login' : 'signup'}`,
         isLogin ? { email, password } : { username, email, password }
       );
+      localStorage.setItem('token', response.data.token); // Store the token
       login(response.data.token, response.data.user);
       navigate('/');
     } catch (err) {
