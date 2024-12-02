@@ -5,7 +5,7 @@ import { AuthContext } from "./Auth/AuthContext";
 import { motion } from "framer-motion";
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 
-const API_URL = "http://localhost:5000/api"; // or your actual backend URL
+const API_URL = "https://clg-event-management.onrender.com/api"; // or your actual backend URL
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
