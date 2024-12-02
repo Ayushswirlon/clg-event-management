@@ -24,7 +24,7 @@ function EventForm() {
     try {
       console.log('Submitting event:', { title, description, date, location, capacity: parseInt(capacity), category });
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/events', 
+      const response = await axios.post('https://clg-event-management.onrender.com/api/events', 
         { title, description, date, location, capacity: parseInt(capacity), category },
         { headers: { Authorization: `Bearer ${token}` } }
       );
