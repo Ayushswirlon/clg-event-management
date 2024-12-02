@@ -1,35 +1,36 @@
-import React, { useState, useContext } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from './Auth/AuthContext';
-import { motion } from 'framer-motion';
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import React, { useState, useContext } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "./Auth/AuthContext";
+import { motion } from "framer-motion";
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 
-const API_URL = 'http://localhost:5000/api'; // or your actual backend URL
+const API_URL = "http://localhost:5000/api"; // or your actual backend URL
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     try {
       const response = await axios.post(
-        `${API_URL}/auth/${isLogin ? 'login' : 'signup'}`,
-        isLogin ? { email, password } : { username, email, password }
+        `${API_URL}/auth/${isLogin ? "login" : "signup"}`,
+        isLogin ? { email, password } : { username, email, password, role }
       );
-      localStorage.setItem('token', response.data.token); // Store the token
+      localStorage.setItem("token", response.data.token); // Store the token
       login(response.data.token, response.data.user);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred');
+      setError(err.response?.data?.message || "An error occurred");
     }
   };
 
@@ -47,7 +48,7 @@ function Auth() {
       >
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            {isLogin ? 'Sign in to your account' : 'Create a new account'}
+            {isLogin ? "Sign in to your account" : "Create a new account"}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -106,7 +107,7 @@ function Auth() {
                 <input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
@@ -129,6 +130,26 @@ function Auth() {
                 </div>
               </div>
             </div>
+            {!isLogin && (
+              <div className="mb-4">
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Select Role
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value="user">Regular User</option>
+                  <option value="collegeEventer">Event Creator</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div>
@@ -138,7 +159,7 @@ function Auth() {
               whileTap={{ scale: 0.95 }}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
             >
-              {isLogin ? 'Sign in' : 'Sign up'}
+              {isLogin ? "Sign in" : "Sign up"}
             </motion.button>
           </div>
         </form>
@@ -149,7 +170,9 @@ function Auth() {
             whileHover={{ scale: 1.05 }}
             className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
-            {isLogin ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
+            {isLogin
+              ? "Need an account? Sign up"
+              : "Already have an account? Sign in"}
           </motion.button>
         </div>
 

@@ -1,10 +1,10 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { AuthContext } from '../Auth/AuthContext';
-import { motion } from 'framer-motion';
-import { FiMenu, FiX, FiMoon, FiSun } from 'react-icons/fi';
-import Footer from './Footer';
-import Hero from '../Hero';
+import React, { useContext, useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { AuthContext } from "../Auth/AuthContext";
+import { motion } from "framer-motion";
+import { FiMenu, FiX, FiMoon, FiSun } from "react-icons/fi";
+import Footer from "./Footer";
+import Hero from "../Hero";
 
 function Layout({ children }) {
   const { isAuthenticated, user, logout } = useContext(AuthContext);
@@ -14,9 +14,9 @@ function Layout({ children }) {
 
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
 
@@ -31,7 +31,7 @@ function Layout({ children }) {
           <div className="flex justify-between h-16">
             <div className="flex">
               <Link to="/" className="flex-shrink-0 flex items-center">
-                <motion.span 
+                <motion.span
                   className="text-2xl font-bold text-primary-600 dark:text-primary-400"
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -46,6 +46,7 @@ function Layout({ children }) {
               <NavLink to="/create">Create Event</NavLink>
               {isAuthenticated ? (
                 <>
+                  <NavLink to="/event"></NavLink>
                   <NavLink to="/profile">Profile</NavLink>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -57,7 +58,9 @@ function Layout({ children }) {
                   </motion.button>
                 </>
               ) : (
-                <NavLink to="/auth" className="btn">Sign In</NavLink>
+                <NavLink to="/auth" className="btn">
+                  Sign In
+                </NavLink>
               )}
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -73,13 +76,17 @@ function Layout({ children }) {
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
               >
-                {isMenuOpen ? <FiX className="h-6 w-6" /> : <FiMenu className="h-6 w-6" />}
+                {isMenuOpen ? (
+                  <FiX className="h-6 w-6" />
+                ) : (
+                  <FiMenu className="h-6 w-6" />
+                )}
               </button>
             </div>
           </div>
         </div>
         {isMenuOpen && (
-          <motion.div 
+          <motion.div
             className="sm:hidden"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -91,7 +98,10 @@ function Layout({ children }) {
               {isAuthenticated ? (
                 <>
                   <MobileNavLink to="/profile">Profile</MobileNavLink>
-                  <button onClick={logout} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300">
+                  <button
+                    onClick={logout}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300"
+                  >
                     Sign out
                   </button>
                 </>
@@ -103,11 +113,9 @@ function Layout({ children }) {
         )}
       </nav>
 
-      {location.pathname === '/' && <Hero />}
+      {location.pathname === "/" && <Hero />}
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">{children}</main>
 
       <Footer />
     </div>
