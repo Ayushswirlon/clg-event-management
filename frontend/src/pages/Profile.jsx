@@ -25,7 +25,7 @@ function Profile() {
       try {
         const token = localStorage.getItem('token');
         console.log('Fetching user profile...');
-        const response = await axios.get('http://localhost:5000/api/auth/profile', {
+        const response = await axios.get('https://clg-event-management.onrender.com/api/auth/profile', {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         });
