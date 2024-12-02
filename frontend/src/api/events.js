@@ -1,6 +1,6 @@
 import axios from './axiosConfig';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://clg-event-management.onrender.com/api';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
