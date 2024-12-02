@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // or whatever port your frontend is running on
+    origin: "https://clg-event-management-1.onrender.com", // or whatever port your frontend is running on
     credentials: true,
   })
 );
