@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('http://localhost:5000/api/auth/profile', {
+          const response = await axios.get('https://clg-event-management.onrender.com/api/auth/profile', {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUser(response.data);
