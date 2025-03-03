@@ -10,12 +10,13 @@ require("./models/Event");
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: "https://clg-event-management-1.onrender.com", // or whatever port your frontend is running on
-    credentials: true,
-  })
-);
+
+app.use(cors({
+    origin: ['https://clg-event-management.vercel.app', 'https://clg-event-management-1.onrender.com'], // Add both domains
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
+
 app.use(express.json());
 
 mongoose
